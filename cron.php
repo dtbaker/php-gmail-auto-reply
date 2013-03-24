@@ -151,7 +151,7 @@ dtbaker
 ';
     $headers  = 'MIME-Version: 1.0' . "\r\n";
     $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-    $headers .= 'To: ' . $overview->from . "\r\n"; // todo: insecure? meh. don't worry about it, will implement a more secure SMTP class soon.
+    //$headers .= 'To: ' . $overview->from . "\r\n"; // works without this.
     $headers .= 'From: dtbaker Envato <envato@blueteddy.com.au>' . "\r\n";
     $headers .= 'Bcc: envato@blueteddy.com.au' . "\r\n"; // send back to my email account so the reply appears in threaded gmail view
 
