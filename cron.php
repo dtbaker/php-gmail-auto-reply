@@ -136,7 +136,6 @@ foreach($sorted_emails as $overview){
 This email address is <u>not monitored</u>. <br/><br/>
 Please send any <b>support requests</b> via our dedicated support website located here:<br/>
 <a href="http://dtbaker.net/envato/">http://dtbaker.net/envato/</a><br/><br/>
-<br/><br/>
 Kind Regards,<br/>
 dtbaker
 </p>
@@ -145,10 +144,10 @@ dtbaker
 ';
     $headers  = 'MIME-Version: 1.0' . "\r\n";
     $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-    $headers .= 'To: ' . $overview->to . "\r\n"; // todo: insecure? meh. don't worry about it, will implement a more secure SMTP class soon.
+    $headers .= 'To: ' . $overview->from . "\r\n"; // todo: insecure? meh. don't worry about it, will implement a more secure SMTP class soon.
     $headers .= 'From: dtbaker Envato <envato@blueteddy.com.au>' . "\r\n";
     $headers .= 'Bcc: envato@blueteddy.com.au' . "\r\n"; // send back to my email account so the reply appears in threaded gmail view
 
-    mail($overview->to, 'Re: '.$overview->subject, $message, $headers);
+    mail($overview->from, 'Re: '.$overview->subject, $message, $headers);
 
 }
