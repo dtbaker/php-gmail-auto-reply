@@ -81,6 +81,13 @@ foreach($search_results as $search_result){
     }
     foreach ($result as $overview) {
         if(!isset($overview->subject) && !$overview->date)continue; // skip these ones without dates and subjects?
+        if(strpos($overview->subject,'Re:')!==false){
+            if($debug){
+                // not sure if this is the best thing to do. oh well.
+                echo "Ignoring this email subject '".$overview->subject."' because it has 'Re:' in it. <br>\n";
+            }
+            continue;
+        }
         $message_id = isset($overview->message_id) ? (string)$overview->message_id : false;
         $overview->time = strtotime($overview->date);
         $sorted_emails [] = $overview;
