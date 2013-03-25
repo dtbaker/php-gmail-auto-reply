@@ -6,6 +6,7 @@ $live               = false; // change this to true when you're ready to start s
 $debug              = true; //
 
 /**** Settings for POP3/IMAP account (ie: reading emails) *****/
+
 $email_receive_username     = 'your@gmailaccount.com';
 $email_receive_password     = 'password';
 $email_receive_mode = 'imap'; // or pop3
@@ -21,9 +22,16 @@ $search_string      = 'UNSEEN SUBJECT "%Message sent via your marketplace profil
 
 
 /**** Settings for SMTP account (le: sending email replies) ****/
-$email_send_host    = 'smtp.gmail.com';
-$email_send_port    = '557';
-$email_send_username = 'your@gmailaccount.com';
-$email_send_password = 'password';
+$email_from     = $email_receive_username;
+$email_from_name     = 'Your Name';
+$email_bcc     = ''; //BCC address
 
+$email_send_host    = 'smtp.googlemail.com';
+$email_send_port    = '587';
+$email_send_username = $email_receive_username;
+$email_send_password = $email_receive_password;
+$email_send_smtpauth = true;
+$email_send_smtpsecure = 'tls';
+
+$timeformat = 'Y-d-m H:i:s';
 /**** END SETTINGS ****/
