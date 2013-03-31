@@ -119,10 +119,11 @@ $mail->SMTPSecure = $email_send_smtpsecure;        // Enable encryption, 'ssl' a
 $mail->Port = $email_send_port;                    // Port
 
 
-$body = file_get_contents('template.html');
 
 foreach($sorted_emails as $overview){
     
+    $body = file_get_contents('template.html');
+
     $message_number++;
     $message_id = (string)$overview->message_id;
     if($debug){
