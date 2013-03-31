@@ -101,7 +101,29 @@ uasort($sorted_emails,'dtbaker_ticket_import_sort');
 
 
 $message_number = 0;
+
+require_once 'PHPMailer/class.phpmailer.php';
+require_once 'PHPMailer/class.smtp.php';
+
+
+$mail = new PHPMailer;
+
+$mail->CharSet = 'UTF-8';
+
+$mail->IsSMTP();                                   // Set mailer to use SMTP
+$mail->Host = $email_send_host;                    // Specify main and backup server
+$mail->SMTPAuth = $email_send_smtpauth;            // Enable SMTP authentication
+$mail->Username = $email_send_username;            // SMTP username
+$mail->Password = $email_send_password;            // SMTP password
+$mail->SMTPSecure = $email_send_smtpsecure;        // Enable encryption, 'ssl' also accepted
+$mail->Port = $email_send_port;                    // Port
+
+
+
 foreach($sorted_emails as $overview){
+    
+    $body = file_get_contents('template.html');
+
     $message_number++;
     $message_id = (string)$overview->message_id;
     if($debug){
@@ -110,8 +132,8 @@ foreach($sorted_emails as $overview){
             Found email: <strong>#<?php echo $message_number;?></strong>
             Date: <strong><?php echo $overview->date;?></strong> <br/>
             Subject: <strong><?php echo htmlspecialchars($overview->subject);?></strong> <br/>
-            From: <strong><?php echo htmlspecialchars($overview->from);?></strong>
-            To: <strong><?php echo htmlspecialchars($overview->to);?></strong>
+            From: <strong><?php echo htmlspecialchars($overview->from);?></strong> <br/>
+            To: <strong><?php echo htmlspecialchars($overview->to);?></strong> <br/>
             Message ID: <strong><?php echo htmlspecialchars($message_id);?></strong>
         </div>
         <?php
@@ -122,39 +144,51 @@ foreach($sorted_emails as $overview){
         }
         continue;
     }
-
     // mark this email as seen. useful if we're searching based on "UNSEEN" emails.
     $status = imap_setflag_full($mbox, $overview->msgno, "\\Seen");
 
 
-    // sent the email back to $overview->from
-    // just use PHP mail() for now
-    // todo: integrate PHPMailer or something for SMTP sending, so the reply can go back through gmail and appear within your gmail account like current autoresponders do.
+	//clear addresses
+	$mail->ClearAddresses();
+	
+	$mail->From = $email_from;
+	$mail->FromName = $email_from_name;
+	
+	//Add a recipient
+	$mail->AddAddress($overview->from);
+	
+	// Add BCC
+	if(!empty($email_bcc)) $mail->AddBCC($email_bcc);
+	
+	$mail->IsHTML(true);
+		
+	$mail->Subject = 'Re: '.$overview->subject;
+	
+	$replace = array(
+		'{preheader}' => '',
+		'{subject}' => $mail->Subject,
+		'{senddate}' => date($timeformat, strtotime($overview->date)),
+		'{date}' => date($timeformat),
 
-
-
-    $message = '
-<html>
-<head>
-  <title>Autoreply</title>
-</head>
-<body>
-  <p>Hello, <br/><br/>
-This email address is <u>not monitored</u>. <br/><br/>
-Please send any <b>support requests</b> via our dedicated support website located here:<br/>
-<a href="http://dtbaker.net/envato/">http://dtbaker.net/envato/</a><br/><br/>
-Kind Regards,<br/>
-dtbaker
-</p>
-</body>
-</html>
-';
-    $headers  = 'MIME-Version: 1.0' . "\r\n";
-    $headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-    //$headers .= 'To: ' . $overview->from . "\r\n"; // works without this.
-    $headers .= 'From: dtbaker Envato <envato@blueteddy.com.au>' . "\r\n";
-    $headers .= 'Bcc: envato@blueteddy.com.au' . "\r\n"; // send back to my email account so the reply appears in threaded gmail view
-
-    mail($overview->from, 'Re: '.$overview->subject, $message, $headers);
-
+	);
+	
+	//replace placeholders
+	$body = str_replace(array_keys($replace), array_values($replace), $body);
+	
+	//remove all missing placeholders
+	$body = preg_replace('#{\w+}#', '', $body);
+	
+	$mail->Body = $body;
+	
+	if(!$mail->Send()) {
+        if($debug){
+		   echo 'Message could not be sent.';
+		   echo 'Mailer Error: ' . $mail->ErrorInfo;
+		   continue;
+        }
+	}else{
+		if($debug){
+		   echo 'Message sent to '.$overview->from;
+		}
+	}
 }
